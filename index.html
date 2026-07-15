@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>浅舟排盘</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="lake-scene" aria-hidden="true">
+    <div class="water-ripple ripple-a"></div>
+    <div class="water-ripple ripple-b"></div>
+    <div class="mist"></div>
+  </div>
+
+  <div id="loadingOverlay" class="loading-overlay" aria-live="polite" aria-hidden="true">
+      <div class="boat-loader">
+      <div class="moon-disc"></div>
+      <div class="boat">
+        <div class="canopy"></div>
+        <div class="hull"></div>
+        <div class="wake"></div>
+      </div>
+      <span>浅舟问渡，水纹起盘...</span>
+    </div>
+  </div>
+
+  <main class="app-shell">
+    <section class="hero-panel" aria-labelledby="appTitle">
+      <div class="brand">
+        <div>
+          <p class="eyebrow">Qianzhou Astrology</p>
+          <h1 id="appTitle">浅舟排盘</h1>
+        </div>
+        <span class="version">本地命理库</span>
+      </div>
+
+      <div class="workspace-grid">
+        <form id="birthForm" class="control-panel">
+          <div class="form-grid">
+            <label>
+              <span>姓名</span>
+              <input id="name" type="text" value="示例命盘" autocomplete="name">
+            </label>
+
+            <label>
+              <span>性别</span>
+              <select id="gender">
+                <option value="male">男</option>
+                <option value="female">女</option>
+              </select>
+            </label>
+
+            <label>
+              <span>输入历法</span>
+              <select id="dateMode">
+                <option value="solar">阳历输入</option>
+                <option value="lunar">农历输入</option>
+              </select>
+            </label>
+
+            <label id="solarDateField">
+              <span>阳历日期</span>
+              <input id="date" type="date" required>
+            </label>
+
+            <label>
+              <span>出生时间</span>
+              <input id="time" type="time" value="08:30" required>
+            </label>
+
+            <label>
+              <span>地点</span>
+              <input id="place" type="text" value="苏州太湖" autocomplete="address-level2">
+            </label>
+
+            <label id="lunarYearField">
+              <span>农历年</span>
+              <select id="lunarYear"></select>
+            </label>
+
+            <label id="lunarMonthField">
+              <span>农历月</span>
+              <select id="lunarMonth"></select>
+            </label>
+
+            <label id="lunarDayField">
+              <span>农历日</span>
+              <select id="lunarDay"></select>
+            </label>
+
+            <label id="lunarLeapField" class="check-label">
+              <span>闰月</span>
+              <input id="lunarLeap" type="checkbox">
+            </label>
+          </div>
+
+          <div class="conversion-line">
+            <span id="conversionText">阳历 / 农历换算就绪</span>
+          </div>
+
+          <div class="actions">
+            <button type="submit">测算命盘</button>
+            <button id="saveChartBtn" type="button" class="secondary">保存命盘</button>
+            <button id="printBtn" type="button" class="ghost">打印</button>
+          </div>
+        </form>
+
+        <aside class="database-panel" aria-label="命理数据库">
+          <div class="panel-head">
+            <div>
+              <h2>命理数据库</h2>
+              <span id="dbStatus">可保存 1000+ 命盘</span>
+            </div>
+            <select id="dbSort">
+              <option value="recent">最后打开</option>
+              <option value="initial">姓名首字母</option>
+            </select>
+          </div>
+          <div id="dbList" class="db-list"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="divination-panel" aria-label="易经占卜">
+      <div class="panel-head">
+        <div>
+          <h2>易经占卜</h2>
+          <span>静心一念，起卦观象</span>
+        </div>
+        <button id="castHexagramBtn" type="button">起卦</button>
+      </div>
+      <div class="divination-grid">
+        <div id="hexagramLines" class="hexagram-lines"></div>
+        <div class="hexagram-result">
+          <strong id="hexagramName">未起卦</strong>
+          <span id="hexagramMeta">点击起卦生成本卦、变爻与简析</span>
+          <p id="hexagramText">此功能使用六爻随机起卦，给出卦象气质、动爻提示和简要解析，适合作为日常问事参考。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="summary" aria-label="命盘摘要">
+      <div>
+        <span>阳历</span>
+        <strong id="solarText">-</strong>
+      </div>
+      <div>
+        <span>农历</span>
+        <strong id="lunarText">-</strong>
+      </div>
+      <div>
+        <span>四柱</span>
+        <strong id="pillarsText">-</strong>
+      </div>
+      <div>
+        <span>命身</span>
+        <strong id="bodyText">-</strong>
+      </div>
+      <div>
+        <span>五行局</span>
+        <strong id="bureauText">-</strong>
+      </div>
+    </section>
+
+    <section class="chart-wrap" aria-label="浅舟命盘">
+      <div id="chart" class="chart"></div>
+      <div class="center-note" aria-label="八字与大运">
+        <div class="center-top">
+          <div class="center-title">
+            <strong id="centerName">示例命盘</strong>
+            <span id="centerMeta">填写资料后测算</span>
+          </div>
+          <div class="flow-card">
+            <span>流年</span>
+            <strong id="flowYearText">-</strong>
+            <small id="flowTransformText">-</small>
+          </div>
+        </div>
+        <div id="baziGrid" class="bazi-grid"></div>
+        <div class="fortune-inline">
+          <span class="mini-title">大运</span>
+          <div id="fortuneInline" class="mini-cycle-strip"></div>
+        </div>
+        <div>
+          <span class="mini-title">神煞</span>
+          <div id="shenShaText" class="mini-tags"></div>
+        </div>
+        <div id="relationText" class="relation-text">点击任一宫位查看三方四正</div>
+      </div>
+    </section>
+
+    <section class="cycles-panel" aria-label="流年流月">
+      <div class="cycle-row">
+        <div class="cycle-label">流年</div>
+        <div id="annualCycles" class="cycle-strip"></div>
+      </div>
+      <div class="cycle-row">
+        <div class="cycle-label">流月</div>
+        <div id="monthlyCycles" class="cycle-strip"></div>
+      </div>
+    </section>
+
+    <section class="detail-panel">
+      <h2>四化与说明</h2>
+      <div id="transformations" class="tag-row"></div>
+      <p>
+        浅舟排盘为本地原创学习版，命盘库使用浏览器本地数据库保存；星曜亮度、安星规则与运限可继续按目标门派校准。
+      </p>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
